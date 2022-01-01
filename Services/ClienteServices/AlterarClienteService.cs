@@ -1,6 +1,5 @@
-﻿namespace Advocacia_Api.Services.ClienteServices
+﻿namespace Advocacia_Api.Services.ClienteServices;
+
+public class AlterarClienteService
 {
-    public class AlterarClienteService
-    {
-    }
 }

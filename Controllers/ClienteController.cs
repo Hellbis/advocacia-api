@@ -2,42 +2,47 @@
 using Advocacia_Api.Services.ClienteServices;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Advocacia_Api.Controllers
+namespace Advocacia_Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ClienteController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ClienteController : ControllerBase
+    private IConfiguration _configuration;
+    public ClienteController(IConfiguration config)
     {
-        [HttpPost]
-        public async Task<IActionResult> Inserir([FromBody] Cliente cliente)
-        {
-            try
-            {
-                await new InserirClienteService().Handle(cliente);
-                return StatusCode(201, "Cliente creado com sucesso!");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex);
-            }
-        }
+        _configuration = config;
+    }
 
-        [HttpPut]
-        public async Task<IActionResult> Alterar([FromBody] Cliente Cliente)
+    [HttpPost]
+    public async Task<IActionResult> Inserir([FromBody] Cliente cliente)
+    {
+        try
         {
-            return Ok(Cliente);
+            await new InserirClienteService().Handle(_configuration, cliente);
+            return StatusCode(201, "Cliente creado com sucesso!");
         }
+        catch (Exception ex)
+        {
+            return BadRequest(ex);
+        }
+    }
 
-        [HttpGet]
-        public async Task<IActionResult> Listar()
-        {
-            return Ok(new List<Cliente>());
-        }
+    [HttpPut]
+    public async Task<IActionResult> Alterar([FromBody] Cliente Cliente)
+    {
+        return Ok(Cliente);
+    }
 
-        [HttpGet("{Id}")]
-        public async Task<IActionResult> BuscarCliente([FromRoute] int Id)
-        {
-            return Ok(new Cliente() { Id = Id });
-        }
+    [HttpGet]
+    public async Task<IActionResult> Listar()
+    {
+        return Ok(await new ListarClienteService().Handle(_configuration));
+    }
+
+    [HttpGet("{Id}")]
+    public async Task<IActionResult> BuscarCliente([FromRoute] int Id)
+    {
+        return Ok(new Cliente() { Id = Id });
     }
 }

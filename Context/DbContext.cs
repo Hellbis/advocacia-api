@@ -1,19 +1,17 @@
-﻿using System.Data.SqlClient;
+﻿using Npgsql;
 
-namespace Advocacia_Api.Context
+namespace Advocacia_Api.Context;
+
+public class DbContext
 {
-    public class DbContext
+    private readonly IConfiguration _configuration;
+
+    public DbContext(IConfiguration configuration)
     {
-        public static NpgsqlConnection Connection()
-        {
-            try
-            {
-                return new NpgsqlConnection("");
-            }
-            catch (Exception)
-            {
-                throw new Exception("Impossível conectar ao banco de dados.");
-            }
-        }
+        _configuration = configuration;
     }
+
+    public NpgsqlConnection GetConnection() =>
+        new (_configuration.GetConnectionString("postgres"));
 }
+

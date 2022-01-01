@@ -1,46 +1,49 @@
 ﻿using Advocacia_Api.Context;
 using Advocacia_Api.Models;
 using Dapper;
-using System.Data.SqlClient;
+using Npgsql;
 
-namespace Advocacia_Api.Repositories
+namespace Advocacia_Api.Repositories;
+
+public class ClienteRepository
 {
-    public class ClienteRepository
+    private readonly NpgsqlConnection _sqlConnection;
+
+
+    public ClienteRepository(IConfiguration configuration)
     {
-        private SqlConnection _sqlConnection;
+        _sqlConnection = new DbContext(configuration).GetConnection();
+        _sqlConnection.Open();
+    }
 
-        public ClienteRepository()
+    public async Task<bool> Inserir(Cliente cliente)
+    {
+        try
         {
-            _sqlConnection = DbContext.Connection();
-            _sqlConnection.Open();
+            string query = $"INSERT INTO Cliente(cpf, nome, telefone, email) " +
+                $"VALUES('{cliente.Cpf}', '{cliente.Nome}', '{cliente.Telefone}', '{cliente.Email}')";
+            await _sqlConnection.ExecuteAsync(query, null);
+            _sqlConnection.Close();
+            return true;
         }
-
-        public async Task<bool> Inserir(Cliente cliente)
+        catch (Exception)
         {
-            try
-            {
-                string query = $"INSERT INTO Cliente(cpf, nome, telefone, email) " +
-                    $"VALUES({cliente.Cpf}, {cliente.Nome}, {cliente.Telefone}, {cliente.Email})";
-                await _sqlConnection.ExecuteAsync(query, null);
-                return true;
-            }
-            catch (Exception)
-            {
-                throw new Exception("Não foi possível inserir cliente");
-            }
+            throw new Exception("Não foi possível inserir cliente");
         }
+    }
 
-        public async Task<List<Cliente>> Listar()
+    public async Task<List<Cliente>> Listar()
+    {
+        try
         {
-            try
-            {
-                var query = " SELECT Id, Cpf, Nome, Telefone, Email FROM CLIENTE ";
-                return (await _sqlConnection.QueryAsync<Cliente>(query, null)).ToList();
-            }
-            catch (Exception)
-            {
-                throw new Exception("Não foi possível retornar os clientes");
-            }
+            var query = " SELECT Id, Cpf, Nome, Telefone, Email FROM CLIENTE ";
+            var result = (await _sqlConnection.QueryAsync<Cliente>(query, null)).ToList();
+            _sqlConnection.Close();
+            return result;
+        }
+        catch (Exception)
+        {
+            throw new Exception("Não foi possível retornar os clientes");
         }
     }
 }
